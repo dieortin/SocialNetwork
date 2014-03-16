@@ -10,6 +10,8 @@ var required = require("./require.js");
 log("Modules required", "init");
 log("Starting http server...", "init");
 required.http.createServer(function (req, res) {
-  res.end("hi");
+  if (req.method == "POST") {
+    
+  }
 }).listen(config.urlParams.port, config.urlParams.url);
 log("http server started at " + config.urlParams.url + ":" + config.urlParams.port, "init");
