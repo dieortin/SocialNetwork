@@ -12,17 +12,14 @@ In the database (called "socialNetwork" in my code) there should be two tables:
 
 The server requires a file called "conf.json" to be in the "/server" directory (it isn't included in the repository for security reasons) that must be formatted the following way for the server to work:
 
-CONF.JSON (under this line)
---------------------------------------------------------
-{
-  "urlParams": {
-    "url": "put.your.server.url",
-    "port": "your server port (HTTP default is 80)"
-  },
-  "db": {
-    "host": "your database's url",
-    "user": "your database's user",
-    "password": "your password"
-  }
-}
---------------------------------------------------------
+    {
+      "urlParams": {
+        "url": "put.your.server.url",
+        "port": "your server port (HTTP default is 80)"
+      },
+      "db": {
+        "host": "your database's url",
+        "user": "your database's user",
+        "password": "your password"
+      }
+    }
