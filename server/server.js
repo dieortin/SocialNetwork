@@ -23,15 +23,16 @@ log("Starting http server...", "init");
 required.http.createServer(function (req, res) {
     if (req.method == "POST") {
         //TODO: Really process POST requests
+        log("Received POST request", "info");
         res.writeHead(501);
         res.end("POST requests not accepted yet");
+        log("Request responded (code 501)", "info");
     } else if (req.method == "GET") {
         //FUTURE: Detect email confirmation requests
         var resourcePath = processGET.determinePath(req.url, config.serverPath);
         var resourceMIME = processGET.determineMIME(resourcePath, required.mime);
         log("Received GET request for resource with path '" + resourcePath + "' and MIME type '" + resourceMIME + "'", "info");
-        processGET.sendResponse(resourcePath, resourceMIME, required.fs, log, res);
-        log("Request responded", "info");
+        processGET.sendResponse(resourcePath, resourceMIME, required.fs, log, required.errno, res);
         //FUTURE: Parse Jade
     } else {
         res.writeHead(405);
