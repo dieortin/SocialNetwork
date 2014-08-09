@@ -14,17 +14,23 @@ determineMIME = function (filePath, mime) {
     }
     return type;
 };
-sendResponse = function (filePath, mimeType, fs, res) {
+sendResponse = function (filePath, mimeType, fs, log, res) {
     if (!mimeType) { //Unknown MIME type, send 415 error code
         res.writeHead(415); //Http error code for unknown mime
         res.end();
     } else {
-        var content = fs.readFile(filePath, function sendResponse () {
-            res.setHeader('Content-Type', mimeType);
-            res.setHeader('Content-Length', content.length);
-            res.end(content);
+        fs.readFile(filePath, function sendResponse(err, content) {
+            if (err) {
+                log(err, "error");
+                res.writeHead(500, "Internal server error");
+            } else {
+                res.writeHead(200, {
+                    'Content-Type': mimeType,
+                    'Content-Length': content.length
+                });
+                res.end(content);
+            }
         });
-        res.writeHead(200);
     }
 };
 exports.determinePath = determinePath;

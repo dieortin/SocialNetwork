@@ -27,9 +27,11 @@ required.http.createServer(function (req, res) {
         res.end("POST requests not accepted yet");
     } else if (req.method == "GET") {
         //FUTURE: Detect email confirmation requests
-        var resourcePath = processGET.determinePath(req, config.serverPath);
+        var resourcePath = processGET.determinePath(req.url, config.serverPath);
         var resourceMIME = processGET.determineMIME(resourcePath, required.mime);
-        processGET.sendResponse(resourcePath, resourceMIME, required.fs, res);
+        log("Received GET request for resource with path '" + resourcePath + "' and MIME type '" + resourceMIME + "'", "info");
+        processGET.sendResponse(resourcePath, resourceMIME, required.fs, log, res);
+        log("Request responded", "info");
         //FUTURE: Parse Jade
     } else {
         res.writeHead(405);
