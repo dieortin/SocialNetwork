@@ -34,16 +34,14 @@ log("Starting http server...", "init");
 http.createServer(function (req, res) {
     if (req.method == "POST") {
         //TODO: Really process POST requests
-        log("Received POST request", "info");
         res.writeHead(501);
         res.end("POST requests not accepted yet");
-        log("Request responded (code 501)", "info");
+        log("[501] " + req.method + " to " + req.url, "info");
     } else if (req.method == "GET") {
         //FUTURE: Detect email confirmation requests
         var resourcePath = processGET.determinePath(req.url, config.serverPath);
         var resourceMIME = processGET.determineMIME(resourcePath, mime);
-        log("Received GET request for resource with path '" + resourcePath + "' and MIME type '" + resourceMIME + "'", "info");
-        processGET.sendResponse(resourcePath, resourceMIME, fs, log, errno, res);
+        processGET.sendResponse(resourcePath, resourceMIME, fs, log, errno, req, res);
         //FUTURE: Parse Jade
     } else {
         res.writeHead(405);

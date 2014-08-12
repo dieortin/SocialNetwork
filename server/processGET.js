@@ -1,26 +1,34 @@
 //THIS FILE PROCESSES AND RESPONDS TO 'GET' REQUESTS FOR PAGES
 //NOTE: Modules needed: mime, fs, errno
-determinePath = function (url, serverPath) {
-    if (url == '/') {
-        return serverPath + '/index.html';
-    } else {
-        return serverPath + url;
-    }
+var determinePath = function (url, serverPath) {
+    switch(url) {
+            case '/':
+                return serverPath + '/index.html';
+                break;
+            default:
+                return serverPath + url
+                break;
+    };
 };
-determineMIME = function (filePath, mime) {
+var determineMIME = function (filePath, mime) {
     type = mime.lookup(filePath);
     if (type == 'application/octet-stream') { //Default type of mime extension for unknown mime types is application/octet-stream
         return false; //Unknown type!
     }
     return type;
 };
-sendResponse = function (filePath, mimeType, fs, log, errno, res) {
-    if (!mimeType) { //Unknown MIME type, send 415 error code
-        res.writeHead(415); //Http error code for unknown mime
+var sendResponse = function (filePath, mimeType, fs, log, errno, req, res) {
+    var responseCode;
+    var logRes = function() {
+        log("[" + responseCode + "] " + req.method + " to " + req.url, "info");
+    }
+    if (!mimeType) { //Unknown MIME type, send 404 error code
+        res.writeHead(404);
         res.end();
+        responseCode = 404;
+        logRes();
     } else {
         fs.readFile(filePath, function sendResponse(err, content) {
-            var responseCode;
             if (err) {
                 log(errno.errno[err.errno].description, "error"); //Log the error explanation
                 if (err[0] = 34) { //ENOENT error, file doesn't exist
@@ -32,15 +40,16 @@ sendResponse = function (filePath, mimeType, fs, log, errno, res) {
                     res.end();
                     responseCode = 500;
                 }
+                logRes();
             } else {
+                responseCode = 200;
                 res.writeHead(200, {
                     'Content-Type': mimeType,
                     'Content-Length': content.length
                 });
                 res.end(content);
-                responseCode = 200;
+                logRes();
             }
-            log("Request responded (status code: " + responseCode + ")", "info");
         });
     }
 };
