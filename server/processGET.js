@@ -1,59 +1,56 @@
 //THIS FILE PROCESSES AND RESPONDS TO 'GET' REQUESTS FOR PAGES
-//NOTE: Modules needed: mime, fs, errno
-var determinePath = function (url, serverPath) {
-    switch(url) {
-            case '/':
-                return serverPath + '/index.html';
-                break;
-            default:
-                return serverPath + url
-                break;
-    };
-};
-var determineMIME = function (filePath, mime) {
-    type = mime.lookup(filePath);
-    if (type == 'application/octet-stream') { //Default type of mime extension for unknown mime types is application/octet-stream
-        return false; //Unknown type!
+//NOTE: Modules needed: mime, fs, errno, log
+var processGET = function (req, res, modules) {
+    var http = modules[0],
+        mime = modules[1],
+        errno = modules[2],
+        fs = modules[3],
+        mysql = modules[4],
+        logRes = modules[5],
+        config = modules[6],
+        log = modules[7];
+    var resourcePath;
+    var resourceMIME;
+    switch (req.url) {
+    case '/':
+        resourcePath = config.serverPath + '/index.html';
+        break;
+    default:
+        resourcePath = config.serverPath + req.url;
+        break;
     }
-    return type;
-};
-var sendResponse = function (filePath, mimeType, fs, log, errno, req, res) {
-    var responseCode;
-    var logRes = function() {
-        log("[" + responseCode + "] " + req.method + " to " + req.url, "info");
+    if (mime.lookup(resourcePath) == 'application/octet-stream') { //Default type of mime extension for unknown mime types is application/octet-stream
+        resourceMIME = false; //Unknown type!
+    } else {
+        resourceMIME = mime.lookup(resourcePath);
     }
-    if (!mimeType) { //Unknown MIME type, send 404 error code
+    if (!resourceMIME) { //Unknown MIME type, send 404 error code
         res.writeHead(404);
         res.end();
-        responseCode = 404;
-        logRes();
+        logRes(404);
     } else {
-        fs.readFile(filePath, function sendResponse(err, content) {
+        fs.readFile(resourcePath, function respond(err, content) {
             if (err) {
-                log(errno.errno[err.errno].description, "error"); //Log the error explanation
-                if (err[0] = 34) { //ENOENT error, file doesn't exist
+                if (err.errno == 34) { //ENOENT error, file doesn't exist
                     res.writeHead(404);
                     res.end();
-                    responseCode = 404;
+                    logRes(404);
                 } else {
+                    log(errno.errno[err.errno].description, "error"); //Log the error explanation
                     res.writeHead(500, "Internal server error");
                     res.end();
-                    responseCode = 500;
+                    logRes(500);
                 }
-                logRes();
             } else {
-                responseCode = 200;
                 res.writeHead(200, {
-                    'Content-Type': mimeType,
+                    'Content-Type': resourceMIME,
                     'Content-Length': content.length
                 });
                 res.end(content);
-                logRes();
+                logRes(200);
             }
         });
     }
 };
-exports.determinePath = determinePath;
-exports.determineMIME = determineMIME;
-exports.sendResponse = sendResponse;
+exports.processGET = processGET;
 //NOTE: Don't forget to add new required modules to export!

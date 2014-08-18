@@ -15,6 +15,7 @@ var mysql = required.mysql;
 log("Modules required", "init");
 log("Importing web server...", "init");
 var processGET = require("./processGET.js");
+processGET = processGET.processGET;
 log("Web server imported", "init");
 log("Importing POST processing module", "init");
 var processPOST = require("./processPOST.js");
@@ -30,18 +31,25 @@ db.connect();
 log("Connected to database", "init");
 log("Starting http server...", "init");
 
-
 http.createServer(function (req, res) {
+    /*
+     * =========== START MODULE PREPARING ===========
+     */
+    var logRes = function(code) {
+        log("[" + code + "] " + req.method + " to " + req.url, "info");
+    };
+    var modules = [http, mime, errno, fs, mysql, logRes, config, log];
+    /*
+     * ============ END MODULE PREPARING ============
+     */
     if (req.method == "POST") {
         //TODO: Really process POST requests
         res.writeHead(501);
         res.end("POST requests not accepted yet");
-        log("[501] " + req.method + " to " + req.url, "info");
+        logRes(501);
     } else if (req.method == "GET") {
         //FUTURE: Detect email confirmation requests
-        var resourcePath = processGET.determinePath(req.url, config.serverPath);
-        var resourceMIME = processGET.determineMIME(resourcePath, mime);
-        processGET.sendResponse(resourcePath, resourceMIME, fs, log, errno, req, res);
+        processGET(req, res, modules);
         //FUTURE: Parse Jade
     } else {
         res.writeHead(405);
